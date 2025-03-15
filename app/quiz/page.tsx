@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import {ChevronLeft} from 'lucide-react'
+import { X } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useRouter } from "next/navigation"
 
 export default function QuizPage() {
   const [timeLeft, setTimeLeft] = useState(30)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     if (timeLeft <= 0) return
@@ -26,7 +30,8 @@ export default function QuizPage() {
     <div className="min-h-screen bg-white p-4">
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
-        <ChevronLeft onClick={()=>alert('back')} className="hover:opacity-50" />
+        {/* show modal when this clicked with shadcn */}
+        <X className="hover:opacity-50 cursor-pointer" onClick={() => setIsDialogOpen(true)} />
         <h1 className="text-xl">quizziz</h1>
         <div className="text-xl">{formatTime(timeLeft)}</div>
       </div>
@@ -46,9 +51,8 @@ export default function QuizPage() {
             <button
               key={index}
               onClick={() => setSelectedAnswer(index)}
-              className={`w-full rounded-full bg-gray-100 px-6 py-3 text-left transition-colors ${
-                selectedAnswer === index ? "bg-blue-100 text-blue-600" : "hover:bg-gray-200"
-              }`}
+              className={`w-full rounded-full bg-gray-100 px-6 py-3 text-left transition-colors ${selectedAnswer === index ? "bg-blue-100 text-blue-600" : "hover:bg-gray-200"
+                }`}
             >
               {answer}
             </button>
@@ -62,6 +66,25 @@ export default function QuizPage() {
           </Button>
         </div>
       </div>
+
+      {/* Modal */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Exit Quiz</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to exit? Your progress will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => {
+              setIsDialogOpen(false)
+              router.push('/')
+            }}>Exit</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

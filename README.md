@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# quzziz app
 
-## Getting Started
+## story
 
-First, run the development server:
+### Daily Log
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Day 1 – Project Initialization**  
+- Set up a new Next.js project for the "quzziz app".  
+- Created an initial folder structure including folders such as `app`, `components`, `lib`, and more.  
+- Prepared a basic README.md outlining the project story.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Day 2 – Firebase & Next.js Configuration**  
+- Configured Firebase by creating `firebaseConfig.ts` and initializing Firebase in `firebase.ts`.  
+- Updated `next.config.ts` to include necessary headers (e.g., setting `Cross-Origin-Embedder-Policy` and `Cross-Origin-Opener-Policy`) for handling authentication pop-ups.  
+- Created a `.env.local` file based on the Firebase configuration.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Day 3 – Firebase Authentication Integration**  
+- Set up Firebase Authentication using Google and implemented login functionality with both pop-up and redirect approaches.  
+- Developed an authentication service (or related component) along with a custom hook (`useAuth`) for managing authentication state via an Auth Provider.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Day 4 – Firestore and Schema Setup**  
+- Designed and created a data schema in `schema.ts` for quizzes and questions.  
+- Added initial Firestore CRUD functions for quizzes to integrate with the Firestore database.
 
-## Learn More
+**Day 5 – File Upload Feature with Firebase Storage**  
+- Developed a file upload function (`uploadFileFirebase`) for uploading files to Firebase Storage.  
+- Integrated file upload support in the quiz creation page, complete with file input refs for audio (music) and image files, and set a file size limit (1MB).
 
-To learn more about Next.js, take a look at the following resources:
+**Day 6 – Improving User Experience**  
+- Replaced browser `alert` calls with toast notifications (using the toast component from shadcn) for a smoother error display during file upload and other validations.  
+- Added a loading indicator (using a Loader icon) to display while files are uploading.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Day 7 – Displaying Media Based on Uploaded File Type**  
+- Modified the quiz creation page to update the question type from `text` to either `audio` or `image` based on the file uploaded.  
+- Implemented conditional rendering: a text area for text questions, an `<img>` element for image questions, and an `<audio>` player for audio questions.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Day 8 – UI Enhancements and Media Centering**  
+- Adjusted styling to center the uploaded image using CSS flexbox classes.  
+- Ensured that all UI components (buttons, inputs, dialogs) maintain a consistent and polished look throughout the app.
 
-## Deploy on Vercel
+**Day 9 – Project Structure Refactoring**  
+- Reassessed your folder structure and refactored it: moved service-related code (authentication, quiz, and storage services) into a dedicated `services` folder, while keeping helpers and utilities in `lib`.  
+- This change helped clarify the roles of various files and made the project easier to manage.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Day 10 – Final Review and Documentation Updates**  
+- Updated the README.md to reflect the current state and progress of the project.  
+- Reviewed and tested the code for overall structure, performance, and best practices.  
+- Prepared documentation detailing the design decisions, service separation, and project structure for future reference.
