@@ -1,6 +1,6 @@
+import { storage } from "@/lib/firebase"
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage"
 
-const storage = getStorage()
 
 export class StorageService {
   static async uploadFile(file: File, path: string) {

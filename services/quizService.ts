@@ -1,7 +1,7 @@
+import { db } from "@/lib/firebase"
 import { collections, Quiz } from "@/lib/schema"
 import { addDoc, collection, deleteDoc, doc, getDoc, getFirestore, updateDoc } from "firebase/firestore"
 
-const db = getFirestore()
 
 export class QuizService {
   static async addQuiz(quiz: Quiz) {

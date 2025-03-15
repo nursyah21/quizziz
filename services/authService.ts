@@ -1,7 +1,7 @@
+import { auth } from "@/lib/firebase"
 import { useAuthStore } from "@/lib/store"
-import { getAuth, getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth"
+import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth"
 
-const auth = getAuth()
 const googleProvider = new GoogleAuthProvider()
 
 export class AuthService {

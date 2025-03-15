@@ -2,6 +2,12 @@
 
 ## story
 
+## target day
+- day1: init nextjs project and implement google authentication
+- day2: develop feature for creating quizzez, displaying quiz in home page and searching quizzez
+- day3: develop feature game mode where users can play in mulitplayer or just solo
+- day4: fix any bug that arises
+
 ### Daily Log
 
 **Day 1 – Project Initialization**  
