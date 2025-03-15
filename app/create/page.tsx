@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { StorageService } from "@/services/storageService"
+import { storageService, StorageService } from "@/services/storageService"
 import { ArrowLeft, Image, Music, LoaderCircle } from "lucide-react"
 import Link from "next/link"
 import router from "next/router"
@@ -72,7 +72,10 @@ export default function CreatePage() {
     setUploading(true)
     try {
       const path = `${type}/${file.name}`
-      const downloadURL = await StorageService.uploadFile(file, path)
+      const downloadURL = await storageService.uploadFile(file, path)
+      if (!downloadURL){
+        throw new Error();
+      }
       const newQuestions = [...questions]
       newQuestions[qIndex].question = downloadURL
       newQuestions[qIndex].type = type === 'music' ? 'audio' : 'image'

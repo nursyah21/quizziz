@@ -1,7 +1,7 @@
 "use client"
 
 import { Search } from "lucide-react"
-import { Avatar } from "./avatar"
+import { Avatar } from "../components/avatar"
 import { useAuth } from "@/components/auth"
 import LoginPage from "./login"
 import { useAuthStore } from "@/lib/store"

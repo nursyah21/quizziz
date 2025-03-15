@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useAuthStore } from "@/lib/store"
-import { AuthService } from "@/services/authService"
+import { authService, AuthService } from "@/services/authService"
 import { useRouter } from "next/navigation"
 
 export function Avatar() {
@@ -28,7 +28,7 @@ export function Avatar() {
           Create Quiz
         </DropdownMenuItem>
         <DropdownMenuSeparator /> 
-        <DropdownMenuItem onClick={AuthService.logout}>
+        <DropdownMenuItem onClick={authService.logout}>
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>

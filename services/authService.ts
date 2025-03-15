@@ -1,11 +1,17 @@
 import { auth } from "@/lib/firebase"
 import { useAuthStore } from "@/lib/store"
-import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut } from "firebase/auth"
+import { getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, User } from "firebase/auth"
 
 const googleProvider = new GoogleAuthProvider()
 
-export class AuthService {
-  static async signInWithGoogleRedirect() {
+interface IAuthService {
+  signInWithGoogleRedirect(): Promise<User |null>;
+  signInWithGooglePopUp(): Promise<User |null>;
+  logout(): Promise<void>;
+}
+
+export class AuthService implements IAuthService {
+  async signInWithGoogleRedirect() {
     try {
       let user = null
       await signInWithRedirect(auth, googleProvider)
@@ -21,7 +27,7 @@ export class AuthService {
     }
   }
 
-  static async signInWithGooglePopUp() {
+  async signInWithGooglePopUp() {
     try {
       const result = await signInWithPopup(auth, googleProvider)
       const credential = GoogleAuthProvider.credentialFromResult(result)
@@ -35,7 +41,7 @@ export class AuthService {
     }
   }
 
-  static async logout() {
+  async logout() {
     try {
       await signOut(auth)
     } catch (error) {
@@ -44,3 +50,5 @@ export class AuthService {
     }
   }
 }
+
+export const authService = new AuthService()

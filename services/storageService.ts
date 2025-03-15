@@ -1,9 +1,12 @@
 import { storage } from "@/lib/firebase"
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage"
 
+interface IStorageService {
+  uploadFile(file: File, path: string): Promise<string | null>
+}
 
-export class StorageService {
-  static async uploadFile(file: File, path: string) {
+export class StorageService implements IStorageService{
+  async uploadFile(file: File, path: string) {
     try {
       const storageRef = ref(storage, path)
       const snapshot = await uploadBytes(storageRef, file)
@@ -12,7 +15,9 @@ export class StorageService {
       return downloadURL
     } catch (error) {
       console.error('Error uploading file:', error)
-      throw error
+      return null
     }
   }
 }
+
+export const storageService = new StorageService()
