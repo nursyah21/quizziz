@@ -7,32 +7,34 @@ import LoginPage from "./login"
 import { useAuthStore } from "@/lib/store"
 
 export default function HomePage() {
-  const {user, loading} = useAuth()
+  const { user, loading } = useAuth()
 
 
-  if (loading){
+  if (loading) {
     return <></>
   }
 
   if (!user) {
-    return <LoginPage/>
-  }else {
+    return <LoginPage />
+  } else {
     useAuthStore.getState().setUser(user)
   }
-  
+
+  const Header = () => (
+    <header className="flex items-center justify-between border-b p-4 sticky top-0">
+      <div className="flex items-center gap-3">
+        <Avatar />
+        <h1 className="text-xl">quizziz</h1>
+      </div>
+      <button className="p-2">
+        <Search className="h-5 w-5" />
+      </button>
+    </header>
+  )
+
   return (
     <>
-      {/* Header */}
-      <header className="flex items-center justify-between border-b p-4">
-        <div className="flex items-center gap-3">
-          <Avatar />
-          <h1 className="text-xl">quizziz</h1>
-        </div>
-        <button className="p-2">
-          <Search className="h-5 w-5" />
-        </button>
-      </header>
-
+      <Header />
       {/* Quiz List */}
       <div className="p-4">
         <div className="mx-auto max-w-3xl  space-y-6">

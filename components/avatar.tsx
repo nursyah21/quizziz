@@ -24,6 +24,9 @@ export function Avatar() {
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>{user?.displayName}</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={()=>router.push('/my')}>
+          My Quiz
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={()=>router.push('/create')}>
           Create Quiz
         </DropdownMenuItem>

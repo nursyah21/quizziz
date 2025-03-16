@@ -3,8 +3,9 @@ import { Timestamp, DocumentReference } from 'firebase/firestore'
 // Interface for a question
 interface Question {
     type: string;
-    data: string;
+    question: string;
     answers: string[];
+    id: number;
 }
 
 // Interface for a quiz
@@ -14,6 +15,7 @@ interface Quiz {
     difficulty: string;
     questions: Question[];
     timestamp: Timestamp;
+    draft: boolean;
 }
 
 // Interface for a play session

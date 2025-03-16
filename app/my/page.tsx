@@ -6,12 +6,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Question, Quiz } from "@/lib/schema"
-import { useAuthStore } from "@/lib/store"
-import { questionService } from "@/services/questionService"
 import { quizService } from "@/services/quizService"
-import { storageService, StorageService } from "@/services/storageService"
+import { storageService } from "@/services/storageService"
 import { Timestamp } from "firebase/firestore"
-import { ArrowLeft, Image, Music, LoaderCircle, Check, PlusCircle, PlusCircleIcon, Plus } from "lucide-react"
+import { ArrowLeft, Image, LoaderCircle, Music, Plus, Search } from "lucide-react"
 import Link from "next/link"
 import router from "next/router"
 import { useRef, useState } from "react"
@@ -20,12 +18,12 @@ import { toast } from "sonner"
 export default function CreatePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedDifficulty, setSelectedDifficulty] = useState("beginner")
-  const [quizId, setQuizId] = useState<string|null>("")
+  const [quizId, setQuizId] = useState("")
   const [quizTitle, setQuizTitle] = useState("")
   const [questions, setQuestions] = useState<Question[]>([
-    { id: 1, question: "", answers: ["", "", ""], type: "text" },
+    { id: 1, question: "", answers: ["", "", "", ""], type: "text" },
   ])
-  const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const fileMusicRef = useRef<HTMLInputElement | null>(null)
   const fileImageRef = useRef<HTMLInputElement | null>(null)
@@ -36,8 +34,6 @@ export default function CreatePage() {
     { id: "medium", label: "#medium" },
     { id: "hard", label: "#hard" },
   ]
-
-  const user = useAuthStore.getState().user
 
   const handleQuestionChange = (index: number, value: string) => {
     const newQuestions = [...questions]
@@ -85,7 +81,7 @@ export default function CreatePage() {
       }
     }
 
-    setLoading(true);
+    setUploading(true);
     try {
       let quiz;
       // If quizId is set, update the existing quiz; otherwise, create a new one.
@@ -120,9 +116,9 @@ export default function CreatePage() {
       // }
       toast.success("Quiz saved successfully");
     } catch (error) {
-      toast.error("Error saving quiz: " + error);
+      toast.error("Error saving quiz");
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   }
 
@@ -140,7 +136,7 @@ export default function CreatePage() {
       return
     }
 
-    setLoading(true)
+    setUploading(true)
     try {
       const path = `${type}/${file.name}`
       const downloadURL = await storageService.uploadFile(file, path)
@@ -154,41 +150,8 @@ export default function CreatePage() {
     } catch (error) {
       toast.error('Error uploading file')
     } finally {
-      setLoading(false)
+      setUploading(false)
     }
-
-  }
-
-  const saveTitle = async () => {
-    if (!quizTitle) {
-      toast.error('title cant be empty')
-      return
-    }
-
-    let data: Quiz = {
-      title: quizTitle,
-      usercreator: user?.uid ?? "",
-      difficulty: selectedDifficulty,
-      questions: [],
-      timestamp: Timestamp.now(),
-      draft: true
-    }
-
-    setLoading(true)
-    let result = quizId
-    let message = ""
-    if (!quizId) {
-      result = await quizService.addQuiz(data)
-      setQuizId(result)
-      message = result ? "save title and difficulty success" : "fail to save title and difficulty"
-    } else {
-      await quizService.updateQuiz(quizId, {
-        title: quizTitle, difficulty: selectedDifficulty, timestamp: Timestamp.now()
-      })
-      message = "update title and difficulty success"
-    }
-    setLoading(false)
-    toast.error(message)
   }
 
   const Header = () => (
@@ -197,31 +160,21 @@ export default function CreatePage() {
         <Link href={"/"}>
           <ArrowLeft className="h-6 w-6" />
         </Link>
-        <h1 className="text-xl font-medium">create quiz</h1>
+        <h1 className="text-xl font-medium">my quiz</h1>
       </div>
 
-
-      <div className="flex justify-end">
-        <Button onClick={() => setIsDialogOpen(true)} variant={'ghost'} >
-          <Check className="h-6 w-6" />
-        </Button>
-      </div>
+      <button className="p-2">
+        <Search className="h-5 w-5" />
+      </button>
     </div>
   )
 
 
-  const Loading = ({ show }: { show: boolean }) => show ? (
-    <>
-      <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,.5)] z-50">
-        <LoaderCircle className="animate-spin" color="blue" />
-      </div>
-    </>
-  ) : <></>
+
   return (
     <>
       <Header />
-      <Loading show={loading} />
-      <div className="min-h-screen bg-white p-4 py-0 mb-12">
+      <div className="min-h-screen bg-white p-4 py-0">
         <div className="mx-auto max-w-3xl space-y-6">
           {/* Quiz Title */}
           <label className="text-sm">title</label>
@@ -249,9 +202,6 @@ export default function CreatePage() {
             </div>
           </div>
 
-          <Button variant={'ghost'} onClick={saveTitle} className="w-full">{quizId ? "Update" : "Save"} title and difficulty</Button>
-
-          <hr />
 
           {/* Questions */}
           {questions.map((q, qIndex) => (
@@ -278,12 +228,12 @@ export default function CreatePage() {
 
               <div className="relative">
 
-                {/* {
+                {
                   uploading &&
                   <div className="absolute bottom-4 right-4">
                     <LoaderCircle className="animate-spin" />
                   </div>
-                } */}
+                }
                 {q.type === 'image' ? (
                   <div className="flex justify-center items-center">
                     <img src={q.question} alt="Uploaded" className="w-auto h-[300px] text-center" />
@@ -303,7 +253,7 @@ export default function CreatePage() {
                       <Image onClick={() => fileImageRef.current?.click()} className="h-5 w-5 hover:opacity-50" />
                     </div>
                     <Textarea
-                      disabled={loading}
+                      disabled={uploading}
                       placeholder="type question"
                       className="min-h-[150px] bg-gray-100 border-0 pt-14"
                       value={q.question}
