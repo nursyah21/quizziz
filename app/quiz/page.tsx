@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
-import { X } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { X } from 'lucide-react'
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function QuizPage() {
   const [timeLeft, setTimeLeft] = useState(30)
@@ -27,14 +28,15 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-4">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        {/* show modal when this clicked with shadcn */}
-        <X className="hover:opacity-50 cursor-pointer" onClick={() => setIsDialogOpen(true)} />
-        <h1 className="text-xl">quizziz</h1>
-        <div className="text-xl">{formatTime(timeLeft)}</div>
-      </div>
+    <>
+      <Header>
+        {/* <div className="mb-8 flex items-center justify-between">
+        </div> */}
+          {/* show modal when this clicked with shadcn */}
+          <X className="hover:opacity-50 cursor-pointer" onClick={() => setIsDialogOpen(true)} />
+          <h1 className="text-xl">quizziz</h1>
+          <div className="text-xl">{formatTime(timeLeft)}</div>
+      </Header>
 
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Question Number */}
@@ -85,7 +87,7 @@ export default function QuizPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   )
 }
 

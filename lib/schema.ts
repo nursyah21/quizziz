@@ -5,7 +5,8 @@ interface Question {
     type: string;
     question: string;
     answers: string[];
-    id: number;
+    correct: string;
+    id: string;
 }
 
 // Interface for a quiz
@@ -13,7 +14,6 @@ interface Quiz {
     title: string;
     usercreator: string;
     difficulty: string;
-    questions: Question[];
     timestamp: Timestamp;
     draft: boolean;
 }
@@ -26,11 +26,11 @@ interface Play {
 }
 
 // Firestore collections
-const collections = {
+const Collections = {
     quizzes: 'quizzes',
     questions: 'questions',
     plays: 'plays',
 };
 
-export { collections };
+export { Collections };
 export type { Question, Quiz, Play };

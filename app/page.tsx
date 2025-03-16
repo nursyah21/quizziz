@@ -1,10 +1,11 @@
 "use client"
 
+import { useAuth } from "@/components/auth"
+import { Header } from "@/components/header"
+import { useAuthStore } from "@/lib/store"
 import { Search } from "lucide-react"
 import { Avatar } from "../components/avatar"
-import { useAuth } from "@/components/auth"
 import LoginPage from "./login"
-import { useAuthStore } from "@/lib/store"
 
 export default function HomePage() {
   const { user, loading } = useAuth()
@@ -20,23 +21,21 @@ export default function HomePage() {
     useAuthStore.getState().setUser(user)
   }
 
-  const Header = () => (
-    <header className="flex items-center justify-between border-b p-4 sticky top-0">
-      <div className="flex items-center gap-3">
-        <Avatar />
-        <h1 className="text-xl">quizziz</h1>
-      </div>
-      <button className="p-2">
-        <Search className="h-5 w-5" />
-      </button>
-    </header>
-  )
 
   return (
     <>
-      <Header />
+      <Header >
+        <div className="flex items-center gap-3">
+          <Avatar />
+          <h1 className="text-xl">quizziz</h1>
+        </div>
+        <button className="p-2">
+          <Search className="h-5 w-5" />
+        </button>
+      </Header>
+
       {/* Quiz List */}
-      <div className="p-4">
+      <div className="p-4 py-0">
         <div className="mx-auto max-w-3xl  space-y-6">
           {/* Quiz Card 1 */}
           <div className="space-y-1">

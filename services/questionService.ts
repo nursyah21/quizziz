@@ -1,16 +1,28 @@
-import { Quiz } from "@/lib/schema";
+import { db } from "@/lib/firebase";
+import { Collections, Question, Quiz } from "@/lib/schema";
+import { addDoc, collection, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 interface IQuestionService {
-    createQuestion(quiz: Quiz): string;
-    deleteQuestion(questionId: string): void;
+    createQuestion(quizId: string, question: Question): Promise<string>;
+    updateQuestion(quizId: string, question: Question): Promise<void>;
+    deleteQuestion(quizId: string, questionId: string): Promise<void>;
 }
 
 export class QuestionService implements IQuestionService {
-    createQuestion(quiz: Quiz): string {
-        throw new Error("Method not implemented.");
+    async updateQuestion(quizId: string, question: Question): Promise<void> {
+        await updateDoc(doc(db, Collections.quizzes, quizId, Collections.questions, question.id), { ...question })
     }
-    deleteQuestion(questionId: string): void {
-        throw new Error("Method not implemented.");
+
+    async createQuestion(quizId: string, question: Question): Promise<string> {
+        const questionRef = await addDoc(
+            collection(db, Collections.quizzes, quizId, Collections.questions), 
+            question
+        );
+        return questionRef.id;
+    }
+    
+    async deleteQuestion(quizId: string, questionId: string): Promise<void> {
+        await deleteDoc(doc(db, Collections.quizzes, quizId, "questions", questionId))
     }
 }
 

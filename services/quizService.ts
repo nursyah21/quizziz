@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase"
-import { collections, Quiz } from "@/lib/schema"
+import { Collections, Quiz } from "@/lib/schema"
 import { addDoc, collection, deleteDoc, doc, getDoc, getFirestore, updateDoc } from "firebase/firestore"
 
 interface IQuizService {
@@ -7,12 +7,17 @@ interface IQuizService {
   getQuiz(id: string): Promise<Quiz | null>;
   updateQuiz(id: string, quiz: Partial<Quiz>): Promise<void>;
   deleteQuiz(id: string): Promise<void>;
+  publishQuiz(id: string, draft: boolean): Promise<void>;
 }
 
 export class QuizService implements IQuizService {
+  async publishQuiz(id: string, draft: boolean = false): Promise<void> {
+    await updateDoc(doc(db, Collections.quizzes, id), { draft })
+  }
+
   async addQuiz(quiz: Quiz) {
     try {
-      const docRef = await addDoc(collection(db, collections.quizzes), quiz)
+      const docRef = await addDoc(collection(db, Collections.quizzes), quiz)
       return docRef.id
     } catch (error) {
       console.error('Error adding quiz: ', error)
@@ -22,8 +27,7 @@ export class QuizService implements IQuizService {
 
   async getQuiz(id: string) {
     try {
-      const docRef = doc(db, collections.quizzes, id)
-      const docSnap = await getDoc(docRef)
+      const docSnap = await getDoc(doc(db, Collections.quizzes, id))
       if (docSnap.exists()) {
         return docSnap.data() as Quiz
       }
@@ -36,8 +40,7 @@ export class QuizService implements IQuizService {
 
   async updateQuiz(id: string, quiz: Partial<Quiz>) {
     try {
-      const docRef = doc(db, collections.quizzes, id)
-      await updateDoc(docRef, quiz)
+      await updateDoc(doc(db, Collections.quizzes, id), quiz)
     } catch (error) {
       console.error('Error updating quiz: ', error)
     }
@@ -45,9 +48,7 @@ export class QuizService implements IQuizService {
 
   async deleteQuiz(id: string) {
     try {
-      const docRef = doc(db, collections.quizzes, id)
-      await deleteDoc(docRef)
-      console.log('Quiz deleted')
+      await deleteDoc(doc(db, Collections.quizzes, id))
     } catch (error) {
       console.error('Error deleting quiz: ', error)
     }

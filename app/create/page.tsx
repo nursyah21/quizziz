@@ -1,7 +1,9 @@
 "use client"
 
-import { useAuth } from "@/components/auth"
+import { Header } from "@/components/header"
+import { Loading } from "@/components/loading"
 import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,21 +11,24 @@ import { Question, Quiz } from "@/lib/schema"
 import { useAuthStore } from "@/lib/store"
 import { questionService } from "@/services/questionService"
 import { quizService } from "@/services/quizService"
-import { storageService, StorageService } from "@/services/storageService"
+import { storageService } from "@/services/storageService"
 import { Timestamp } from "firebase/firestore"
-import { ArrowLeft, Image, Music, LoaderCircle, Check, PlusCircle, PlusCircleIcon, Plus } from "lucide-react"
+import { ArrowLeft, Check, ChevronRight, Image, Music, Plus } from "lucide-react"
 import Link from "next/link"
-import router from "next/router"
+import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
 import { toast } from "sonner"
 
 export default function CreatePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedDifficulty, setSelectedDifficulty] = useState("beginner")
-  const [quizId, setQuizId] = useState<string|null>("")
+  const [quizId, setQuizId] = useState<string | null>("")
   const [quizTitle, setQuizTitle] = useState("")
   const [questions, setQuestions] = useState<Question[]>([
-    { id: 1, question: "", answers: ["", "", ""], type: "text" },
+    {
+      id: '', question: "", answers: ["", "", ""], type: "text",
+      correct: ""
+    },
   ])
   const [loading, setLoading] = useState(false)
 
@@ -37,7 +42,11 @@ export default function CreatePage() {
     { id: "hard", label: "#hard" },
   ]
 
+  const router = useRouter()
+
   const user = useAuthStore.getState().user
+
+  // FUNCTIONS
 
   const handleQuestionChange = (index: number, value: string) => {
     const newQuestions = [...questions]
@@ -52,7 +61,11 @@ export default function CreatePage() {
   }
 
   const addNewQuestion = () => {
-    setQuestions([...questions, { id: questions.length + 1, question: "", answers: ["", "", "", ""], type: "text" }])
+    if (questions.length >= 50) {
+      toast.error('max question is 50')
+      return
+    }
+    setQuestions([...questions, { id: "", question: "", answers: ["", "", "", ""], type: "text", correct: "" }])
   }
 
   const deleteQuestion = (index: number) => {
@@ -60,15 +73,15 @@ export default function CreatePage() {
       toast.error('at least have 1 question')
       return
     }
+
     const newQuestions = questions.filter((_, qIndex) => qIndex !== index)
     setQuestions(newQuestions)
   }
 
   const saveQuestion = async (index: number) => {
-    // Validate quiz title
-    if (!quizTitle.trim()) {
-      toast.error("Quiz title is required");
-      return;
+    if (!quizId) {
+      toast.error('you must save title and difficulty before create question')
+      return
     }
 
     // Validate each question and its answers
@@ -77,55 +90,43 @@ export default function CreatePage() {
         toast.error(`Question ${qIndex + 1} cannot be empty`);
         return;
       }
+      if (!q.correct.trim()) {
+        toast.error(`Correct Question ${qIndex + 1} cannot be empty`);
+        return;
+      }
+
+      if (q.question.trim().length >= 300) {
+        toast.error(`max length question is 300 character`);
+        return;
+      }
+
+
       for (const [aIndex, answer] of q.answers.entries()) {
         if (!answer.trim()) {
           toast.error(`Answer ${aIndex + 1} for question ${qIndex + 1} cannot be empty`);
           return;
         }
-      }
-    }
-
-    setLoading(true);
-    try {
-      let quiz;
-      // If quizId is set, update the existing quiz; otherwise, create a new one.
-      if (quizId) {
-        toast('Updating quiz...');
-        quiz = await quizService.updateQuiz(quizId, {
-          title: quizTitle,
-          difficulty: selectedDifficulty,
-        });
-      } else {
-        toast('Creating new quiz...');
-        const data: Quiz = {
-          title: quizTitle,
-          usercreator: useAuth().user?.uid ?? "",
-          difficulty: selectedDifficulty,
-          questions: questions,
-          timestamp: Timestamp.now(),
-          draft: true
+        if (answer.trim().length >= 100) {
+          toast.error(`max length answer is 100 character`);
+          return;
         }
-        quiz = await quizService.addQuiz(data);
       }
-
-      // Save each question associated with the quiz
-      // for (const [index, q] of questions.entries()) {
-      //   toast(`Saving question ${index + 1}...`);
-      //   await questionService.createQuestion({
-      //     quizId: quiz.id,
-      //     question: q.question,
-      //     type: q.type,
-      //     answers: q.answers,
-      //   });
-      // }
-      toast.success("Quiz saved successfully");
-    } catch (error) {
-      toast.error("Error saving quiz: " + error);
-    } finally {
-      setLoading(false);
     }
-  }
 
+
+    setLoading(true)
+    let message = "save question"
+    if (questions[index].id) {
+      await questionService.updateQuestion(quizId!, questions[index])
+      message = "update question"
+    } else {
+      const res = await questionService.createQuestion(quizId!, questions[index])
+      questions[index].id = res
+    }
+
+    toast.success(message)
+    setLoading(false)
+  }
 
   const uploadFile = async (type: 'music' | 'image', qIndex: number) => {
     const fileInputRef = type === 'music' ? fileMusicRef : fileImageRef
@@ -164,12 +165,15 @@ export default function CreatePage() {
       toast.error('title cant be empty')
       return
     }
+    if (quizTitle.length >= 100) {
+      toast.error('max length is 100 character')
+      return
+    }
 
     let data: Quiz = {
       title: quizTitle,
       usercreator: user?.uid ?? "",
       difficulty: selectedDifficulty,
-      questions: [],
       timestamp: Timestamp.now(),
       draft: true
     }
@@ -191,35 +195,40 @@ export default function CreatePage() {
     toast.error(message)
   }
 
-  const Header = () => (
-    <div className="mb-6 flex justify-between items-center gap-4 sticky top-0 bg-white p-4">
-      <div className="flex items-center gap-4">
-        <Link href={"/"}>
-          <ArrowLeft className="h-6 w-6" />
-        </Link>
-        <h1 className="text-xl font-medium">create quiz</h1>
-      </div>
+  const publishQuiz = async () => {
+    if (!quizId) {
+      toast.error('you must save title and difficulty')
+      return
+    }
+    if (!questions[0].id){
+      toast.error('you must atleast have 1 question')
+      return
+    }
+    setIsDialogOpen(false)
+    setLoading(true)
+    await quizService.publishQuiz(quizId!)
+    setLoading(false)
+    router.push('/')
+  }
 
 
-      <div className="flex justify-end">
-        <Button onClick={() => setIsDialogOpen(true)} variant={'ghost'} >
-          <Check className="h-6 w-6" />
-        </Button>
-      </div>
-    </div>
-  )
-
-
-  const Loading = ({ show }: { show: boolean }) => show ? (
-    <>
-      <div className="fixed inset-0 flex items-center justify-center bg-[rgba(0,0,0,.5)] z-50">
-        <LoaderCircle className="animate-spin" color="blue" />
-      </div>
-    </>
-  ) : <></>
   return (
     <>
-      <Header />
+      <Header>
+        <div className="flex items-center gap-4">
+          <Link href={"/"}>
+            <ArrowLeft className="h-6 w-6" />
+          </Link>
+          <h1 className="text-xl font-medium">create quiz</h1>
+        </div>
+
+        <div className="flex justify-end">
+          <Button onClick={() => setIsDialogOpen(true)} variant={'ghost'} >
+            <Check className="h-6 w-6" />
+          </Button>
+        </div>
+      </Header>
+
       <Loading show={loading} />
       <div className="min-h-screen bg-white p-4 py-0 mb-12">
         <div className="mx-auto max-w-3xl space-y-6">
@@ -255,76 +264,90 @@ export default function CreatePage() {
 
           {/* Questions */}
           {questions.map((q, qIndex) => (
-            <div key={q.id} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2>question {qIndex + 1}</h2>
-                <div>
-                  <Button
-                    variant={'ghost'}
-                    className="text-green-500 hover:text-green-600 text-sm"
-                    onClick={() => saveQuestion(qIndex)}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    variant={'ghost'}
-                    className="text-red-500 hover:text-red-600 text-sm"
-                    onClick={() => deleteQuestion(qIndex)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-
-              <div className="relative">
-
-                {/* {
-                  uploading &&
-                  <div className="absolute bottom-4 right-4">
-                    <LoaderCircle className="animate-spin" />
-                  </div>
-                } */}
-                {q.type === 'image' ? (
-                  <div className="flex justify-center items-center">
-                    <img src={q.question} alt="Uploaded" className="w-auto h-[300px] text-center" />
-                  </div>
-                ) : q.type === 'audio' ? (
-                  <audio controls className="w-full">
-                    <source src={q.question} type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                  </audio>
-                ) : (
-                  <>
-                    <div className="absolute left-4 top-4 flex gap-2 text-gray-400">
-                      <input ref={fileMusicRef} type="file" accept="audio/*" className="hidden" onChange={() => uploadFile('music', qIndex)} />
-                      <Music onClick={() => fileMusicRef.current?.click()} className="h-5 w-5 hover:opacity-50" />
-
-                      <input ref={fileImageRef} type="file" accept="image/*" className="hidden" onChange={() => uploadFile('image', qIndex)} />
-                      <Image onClick={() => fileImageRef.current?.click()} className="h-5 w-5 hover:opacity-50" />
+            <div key={qIndex} className="space-y-4">
+              <Collapsible defaultOpen>
+                <>
+                  <div className="flex items-center justify-between">
+                    <CollapsibleTrigger className="flex gap-x-2">
+                      <h2>question {qIndex + 1}</h2>
+                    </CollapsibleTrigger>
+                    <div>
+                      <Button
+                        variant={'ghost'}
+                        className="text-green-500 hover:text-green-600 text-sm"
+                        onClick={() => saveQuestion(qIndex)}
+                      >
+                        {q.id ? 'Update' : 'Save'}
+                      </Button>
+                      <Button
+                        variant={'ghost'}
+                        className="text-red-500 hover:text-red-600 text-sm"
+                        onClick={() => deleteQuestion(qIndex)}
+                      >
+                        Delete
+                      </Button>
                     </div>
-                    <Textarea
-                      disabled={loading}
-                      placeholder="type question"
-                      className="min-h-[150px] bg-gray-100 border-0 pt-14"
-                      value={q.question}
-                      onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
-                    />
-                  </>
-                )}
-              </div>
+                  </div>
+                </>
+                <CollapsibleContent>
+                  <div className="relative">
+                    {q.type === 'image' ? (
+                      <div className="flex justify-center items-center">
+                        <img src={q.question} alt="Uploaded" className="w-auto h-[300px] text-center" />
+                      </div>
+                    ) : q.type === 'audio' ? (
+                      <audio controls className="w-full">
+                        <source src={q.question} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    ) : (
+                      <>
+                        <div className="absolute left-4 top-4 flex gap-2 text-gray-400">
+                          <input ref={fileMusicRef} type="file" accept="audio/*" className="hidden" onChange={() => uploadFile('music', qIndex)} />
+                          <Music onClick={() => fileMusicRef.current?.click()} className="h-5 w-5 hover:opacity-50" />
 
-              {/* Answers */}
-              <div className="space-y-3">
-                {q.answers.map((answer, aIndex) => (
-                  <Input
-                    key={aIndex}
-                    placeholder={`answer ${aIndex + 1}`}
-                    className="bg-gray-100 border-0"
-                    value={answer}
-                    onChange={(e) => handleAnswerChange(qIndex, aIndex, e.target.value)}
-                  />
-                ))}
-              </div>
+                          <input ref={fileImageRef} type="file" accept="image/*" className="hidden" onChange={() => uploadFile('image', qIndex)} />
+                          <Image onClick={() => fileImageRef.current?.click()} className="h-5 w-5 hover:opacity-50" />
+                        </div>
+                        <Textarea
+                          disabled={loading}
+                          placeholder="type question"
+                          className="min-h-[150px] bg-gray-100 border-0 pt-14"
+                          value={q.question}
+                          onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Answers */}
+                  <div className="space-y-3">
+                    {q.answers.map((answer, aIndex) => (
+                      <div
+                        key={aIndex}
+                        className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={q.correct === answer && answer != ''}
+                          onChange={() => {
+                            const newQuestions = [...questions];
+                            newQuestions[qIndex].correct = newQuestions[qIndex].answers[aIndex];
+                            setQuestions(newQuestions);
+                          }}
+                        />
+                        <Input
+                          placeholder={`answer ${aIndex + 1}`}
+                          className="bg-gray-100 border-0"
+                          value={answer}
+                          onChange={(e) => handleAnswerChange(qIndex, aIndex, e.target.value)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+
             </div>
           ))}
 
@@ -346,10 +369,7 @@ export default function CreatePage() {
               </DialogHeader>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button variant="outline" className="text-green-500 hover:text-green-600" onClick={() => {
-                  setIsDialogOpen(false)
-                  router.push('/')
-                }}>Yes</Button>
+                <Button variant="outline" className="text-green-500 hover:text-green-600" onClick={publishQuiz}>Yes</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
