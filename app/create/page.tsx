@@ -13,7 +13,8 @@ import { questionService } from "@/services/questionService"
 import { quizService } from "@/services/quizService"
 import { storageService } from "@/services/storageService"
 import { Timestamp } from "firebase/firestore"
-import { ArrowLeft, Check, ChevronRight, Image, Music, Plus } from "lucide-react"
+import { ArrowLeft, Check, Image as ImageIcon, Music, Plus } from "lucide-react"
+import Image from 'next/image'
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
@@ -65,15 +66,20 @@ export default function CreatePage() {
       toast.error('max question is 50')
       return
     }
-    setQuestions([...questions, { id: "", question: "", answers: ["", "", "", ""], type: "text", correct: "" }])
+    setQuestions([...questions, { id: "", question: "", answers: ["", "", ""], type: "text", correct: "" }])
   }
 
-  const deleteQuestion = (index: number) => {
+  const deleteQuestion = async (index: number) => {
     if (questions.length <= 1) {
       toast.error('at least have 1 question')
       return
     }
 
+    if(questions[index].id && quizId){
+      setLoading(true)
+      await questionService.deleteQuestion(quizId, questions[index].id)
+      setLoading(false)
+    }
     const newQuestions = questions.filter((_, qIndex) => qIndex !== index)
     setQuestions(newQuestions)
   }
@@ -153,6 +159,7 @@ export default function CreatePage() {
       newQuestions[qIndex].type = type === 'music' ? 'audio' : 'image'
       setQuestions(newQuestions)
     } catch (error) {
+      console.error(error)
       toast.error('Error uploading file')
     } finally {
       setLoading(false)
@@ -170,12 +177,13 @@ export default function CreatePage() {
       return
     }
 
-    let data: Quiz = {
+    const data: Quiz = {
       title: quizTitle,
       usercreator: user?.uid ?? "",
       difficulty: selectedDifficulty,
       timestamp: Timestamp.now(),
-      draft: true
+      draft: true,
+      numberOfQuestion: 1
     }
 
     setLoading(true)
@@ -200,7 +208,7 @@ export default function CreatePage() {
       toast.error('you must save title and difficulty')
       return
     }
-    if (!questions[0].id){
+    if (!questions[0].id) {
       toast.error('you must atleast have 1 question')
       return
     }
@@ -293,7 +301,7 @@ export default function CreatePage() {
                   <div className="relative">
                     {q.type === 'image' ? (
                       <div className="flex justify-center items-center">
-                        <img src={q.question} alt="Uploaded" className="w-auto h-[300px] text-center" />
+                        <Image src={q.question} alt="Uploaded" className="w-auto h-[300px] text-center" />
                       </div>
                     ) : q.type === 'audio' ? (
                       <audio controls className="w-full">
@@ -307,7 +315,7 @@ export default function CreatePage() {
                           <Music onClick={() => fileMusicRef.current?.click()} className="h-5 w-5 hover:opacity-50" />
 
                           <input ref={fileImageRef} type="file" accept="image/*" className="hidden" onChange={() => uploadFile('image', qIndex)} />
-                          <Image onClick={() => fileImageRef.current?.click()} className="h-5 w-5 hover:opacity-50" />
+                          <ImageIcon onClick={() => fileImageRef.current?.click()} className="h-5 w-5 hover:opacity-50" />
                         </div>
                         <Textarea
                           disabled={loading}
@@ -321,7 +329,7 @@ export default function CreatePage() {
                   </div>
 
                   {/* Answers */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 mt-3">
                     {q.answers.map((answer, aIndex) => (
                       <div
                         key={aIndex}

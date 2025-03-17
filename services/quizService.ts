@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase"
 import { Collections, Quiz } from "@/lib/schema"
-import { addDoc, collection, deleteDoc, doc, getDoc, getFirestore, updateDoc } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, limit, query, updateDoc } from "firebase/firestore"
 
 interface IQuizService {
   addQuiz(quiz: Quiz): Promise<string | null>;
@@ -8,9 +8,29 @@ interface IQuizService {
   updateQuiz(id: string, quiz: Partial<Quiz>): Promise<void>;
   deleteQuiz(id: string): Promise<void>;
   publishQuiz(id: string, draft: boolean): Promise<void>;
+  listQuiz(size: number): Promise<Quiz[] | null>;
+  totalQuiz(): Promise<number>;
 }
 
 export class QuizService implements IQuizService {
+  async totalQuiz(): Promise<number> {
+    return (await getDocs(collection(db, Collections.quizzes))).size
+  }
+
+  async listQuiz(size: number): Promise<Quiz[] | null> {
+    try {
+      const querySnapshot = await getDocs(query(collection(db, Collections.quizzes), limit(size)))
+      const quizzes: Quiz[] = querySnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      } as unknown as Quiz))
+      return quizzes
+    } catch (error) {
+      console.error("Error listing quizzes: ", error)
+      return null
+    }
+  }
+
   async publishQuiz(id: string, draft: boolean = false): Promise<void> {
     await updateDoc(doc(db, Collections.quizzes, id), { draft })
   }

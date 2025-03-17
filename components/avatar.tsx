@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { useAuthStore } from "@/lib/store"
-import { authService, AuthService } from "@/services/authService"
+import { authService } from "@/services/authService"
 import { useRouter } from "next/navigation"
 
 export function Avatar() {

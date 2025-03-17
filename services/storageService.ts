@@ -11,7 +11,6 @@ export class StorageService implements IStorageService{
       const storageRef = ref(storage, path)
       const snapshot = await uploadBytes(storageRef, file)
       const downloadURL = await getDownloadURL(snapshot.ref)
-      console.log('File uploaded successfully:', downloadURL)
       return downloadURL
     } catch (error) {
       console.error('Error uploading file:', error)

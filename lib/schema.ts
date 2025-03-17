@@ -1,4 +1,4 @@
-import { Timestamp, DocumentReference } from 'firebase/firestore'
+import { Timestamp } from 'firebase/firestore';
 
 // Interface for a question
 interface Question {
@@ -11,17 +11,23 @@ interface Question {
 
 // Interface for a quiz
 interface Quiz {
+    id?: string;
     title: string;
     usercreator: string;
     difficulty: string;
     timestamp: Timestamp;
     draft: boolean;
+    numberOfQuestion: number;
 }
+
 
 // Interface for a play session
 interface Play {
-    quiz: DocumentReference<Quiz>;
-    users: string[];
+    quizId: string;
+    users: {
+        id: string;
+        score: number;
+    };
     admin: string;
 }
 
@@ -33,4 +39,5 @@ const Collections = {
 };
 
 export { Collections };
-export type { Question, Quiz, Play };
+export type { Play, Question, Quiz };
+

@@ -9,6 +9,9 @@
 - day4: develop feature game mode where users can play in mulitplayer or just solo
 - day5: fix any bug that arises
 
+# reality
+- day1 (1 day)
+- day2 (2day still counting)
 
 ### Daily Log
 

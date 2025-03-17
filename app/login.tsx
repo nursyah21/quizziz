@@ -1,6 +1,6 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { authService, AuthService } from "@/services/authService"
+import { authService } from "@/services/authService"
 import { LoaderCircle } from "lucide-react"
 import { useState } from "react"
 
@@ -17,7 +17,7 @@ export default function LoginPage() {
           authService.signInWithGooglePopUp()
           await new Promise(res=>setTimeout(res, 3000))
           setisLoading(false)
-        }} className="flex items-center gap-2 px-6 py-5 text-base">
+        }} className="flex items-center gap-2 px-6 py-5">
         {
           isLoading &&
           <LoaderCircle className="animate-spin" color="gray" />

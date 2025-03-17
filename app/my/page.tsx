@@ -1,28 +1,15 @@
 "use client"
 
-import { useAuth } from "@/components/auth"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Question, Quiz } from "@/lib/schema"
-import { quizService } from "@/services/quizService"
-import { storageService } from "@/services/storageService"
-import { Timestamp } from "firebase/firestore"
-import { ArrowLeft, Image, LoaderCircle, Music, Plus, Search } from "lucide-react"
+import { ArrowLeft, Search } from "lucide-react"
 import Link from "next/link"
 import router from "next/router"
-import { useRef, useState } from "react"
-import { toast } from "sonner"
+import { useState } from "react"
 
 export default function CreatePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-
-  const [loading, setLoading] = useState(false)
-
-
-
 
   return (
     <>
