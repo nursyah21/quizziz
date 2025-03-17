@@ -12,8 +12,8 @@ export default function QuizPage() {
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const router = useRouter()
-    const { id } = useParams<{ id: string }>()
-
+    const params = useParams<{id:string}>()
+    
     useEffect(() => {
         if (timeLeft <= 0) return
 
@@ -38,7 +38,7 @@ export default function QuizPage() {
                 <h1 className="text-xl">quizziz</h1>
                 <div className="text-xl">{formatTime(timeLeft)}</div>
             </Header>
-            {id}
+            {params?.id}
 
             <div className="mx-auto max-w-3xl space-y-6 px-4">
                 {/* Question Number */}

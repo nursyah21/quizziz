@@ -1,15 +1,47 @@
 "use client"
 
 import { Header } from "@/components/header"
+import { InfiniteScroll } from "@/components/infinityScroll"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Quiz } from "@/lib/schema"
+import { formatTime } from "@/lib/utils"
+import { quizService } from "@/services/quizService"
 import { ArrowLeft, Search } from "lucide-react"
 import Link from "next/link"
 import router from "next/router"
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 export default function CreatePage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [listQuiz, setListQuiz] = useState<Quiz[] | null>([])
+  const [totalQuiz, setTotalQuiz] = useState<number | null>(null)
+
+  const canLoadMore = useCallback(() => {
+    let result = true
+    if (totalQuiz == null || listQuiz == null) result = false;
+    else if (listQuiz.length == totalQuiz) result = false;
+    return result
+  }, [totalQuiz, listQuiz])
+
+  const loadMoreQuizzes = useCallback(async () => {
+    if (!canLoadMore()) return
+    const moreQuizzes = await quizService.listQuiz({size: 5, isOwn: true})
+    if (moreQuizzes?.length) {
+      setListQuiz(prev => prev ? [...prev, ...moreQuizzes] : moreQuizzes)
+    }
+  }, [canLoadMore])
+
+  const getTotalQuizzes = useCallback(async () => {
+    if (totalQuiz) return;
+    setTotalQuiz(await quizService.totalQuiz({isOwn: true}));
+  }, [totalQuiz]);
+
+  useEffect(() => {
+    getTotalQuizzes()
+
+    loadMoreQuizzes()
+  }, [ listQuiz, totalQuiz, loadMoreQuizzes, getTotalQuizzes])
 
   return (
     <>
@@ -28,6 +60,28 @@ export default function CreatePage() {
 
       <div className="min-h-screen bg-white p-4 py-0">
         <div className="mx-auto max-w-3xl space-y-6">
+
+          {/* Quiz List */}
+          <div className="p-4 py-0">
+            <div className="mx-auto max-w-3xl  space-y-6">
+              {listQuiz?.map((quiz, index) => (
+                <div key={index} className="space-y-1">
+                  <Link href={`/quiz/${quiz.id}`}>
+                    <h2 className="text-lg">{quiz.title}</h2>
+                  </Link>
+                  <p className="text-sm text-muted-foreground">{quiz.numberOfQuestion} question • {quiz.difficulty}</p>
+                  <p className="text-sm text-muted-foreground">{formatTime(quiz.timestamp)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-muted-foreground text-center text-sm my-4">
+              {
+                canLoadMore() && "Please wait..."
+              }
+            </div>
+          </div>
+
+          <InfiniteScroll onEnd={loadMoreQuizzes} />
 
           {/* Modal */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

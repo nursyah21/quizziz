@@ -190,13 +190,13 @@ export default function CreatePage() {
     let result = quizId
     let message = ""
     if (!quizId) {
-      result = await quizService.addQuiz(data)
+      result = await quizService.addQuiz({quiz: data})
       setQuizId(result)
       message = result ? "save title and difficulty success" : "fail to save title and difficulty"
     } else {
-      await quizService.updateQuiz(quizId, {
+      await quizService.updateQuiz({id:quizId, quiz:{
         title: quizTitle, difficulty: selectedDifficulty, timestamp: Timestamp.now()
-      })
+      }})
       message = "update title and difficulty success"
     }
     setLoading(false)
@@ -214,7 +214,7 @@ export default function CreatePage() {
     }
     setIsDialogOpen(false)
     setLoading(true)
-    await quizService.publishQuiz(quizId!)
+    await quizService.publishQuiz({id: quizId!, draft: false})
     setLoading(false)
     router.push('/')
   }

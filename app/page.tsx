@@ -1,35 +1,30 @@
 "use client"
 
-import { useAuth } from "@/components/auth"
 import { Header } from "@/components/header"
 import { InfiniteScroll } from "@/components/infinityScroll"
 import { Quiz } from "@/lib/schema"
-import { useAuthStore } from "@/lib/store"
 import { formatTime } from "@/lib/utils"
 import { quizService } from "@/services/quizService"
 import { Search } from "lucide-react"
 import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
 import { Avatar } from "../components/avatar"
-import LoginPage from "./login"
-
 
 
 export default function HomePage() {
-  const { user, loading } = useAuth()
   const [listQuiz, setListQuiz] = useState<Quiz[] | null>([])
   const [totalQuiz, setTotalQuiz] = useState<number | null>(null)
-  
+
   const canLoadMore = useCallback(() => {
     let result = true
     if (totalQuiz == null || listQuiz == null) result = false;
     else if (listQuiz.length == totalQuiz) result = false;
     return result
-  },[totalQuiz, listQuiz])
+  }, [totalQuiz, listQuiz])
 
   const loadMoreQuizzes = useCallback(async () => {
     if (!canLoadMore()) return
-    const moreQuizzes = await quizService.listQuiz(5)
+    const moreQuizzes = await quizService.listQuiz({ size: 5 })
     if (moreQuizzes?.length) {
       setListQuiz(prev => prev ? [...prev, ...moreQuizzes] : moreQuizzes)
     }
@@ -41,23 +36,10 @@ export default function HomePage() {
   }, [totalQuiz]);
 
   useEffect(() => {
-    if (!user) return
-    
     getTotalQuizzes()
-    
+
     loadMoreQuizzes()
-  }, [user, listQuiz, totalQuiz, loadMoreQuizzes, getTotalQuizzes])
-
-  if (loading) {
-    return <></>
-  }
-
-  if (!user) {
-    return <LoginPage />
-  } else {
-    useAuthStore.getState().setUser(user)
-  }
-
+  }, [listQuiz, totalQuiz, loadMoreQuizzes, getTotalQuizzes])
 
   return (
     <>
@@ -84,15 +66,15 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-      <div className="text-muted-foreground text-center text-sm my-4">
+        <div className="text-muted-foreground text-center text-sm my-4">
           {
             canLoadMore() && "Please wait..."
-          } 
+          }
+        </div>
       </div>
-      </div>
-      
+
       <InfiniteScroll onEnd={loadMoreQuizzes} />
-      
+
     </>
   )
 }
