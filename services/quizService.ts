@@ -9,25 +9,32 @@ interface IQuizService {
   updateQuiz({ id, quiz }: { id: string; quiz: Partial<Quiz> }): Promise<void>;
   deleteQuiz({ id }: { id: string }): Promise<void>;
   publishQuiz({ id, draft }: { id: string; draft: boolean }): Promise<void>;
-  listQuiz({ size, isOwn }: { size?: number; isOwn?: boolean }): Promise<Quiz[] | null>;
-  totalQuiz({ draft, isOwn }: { draft?: boolean; isOwn?: boolean }): Promise<number>;
-  searchQuiz({ title }: { title: string }): Promise<Quiz[] | null>;
+  listQuiz({ size, isOwn, search }: { size?: number; isOwn?: boolean; search?: string; }): Promise<Quiz[] | null>;
+  totalQuiz({ draft, isOwn, search }: { draft?: boolean; isOwn?: boolean, search?: string; }): Promise<number>;
 }
 
 export class QuizService implements IQuizService {
-  async searchQuiz({ title }: { title: string }): Promise<Quiz[] | null> {
-    throw new Error("Method not implemented.");
-  }
-
-  async totalQuiz({ draft = false, isOwn = false }: { draft?: boolean; isOwn?: boolean } = {}): Promise<number> {
+  async totalQuiz({ draft=false, isOwn, search }: { draft?: boolean; isOwn?: boolean; search?: string; } = {}): Promise<number> {
     if (isOwn) {
       const user = useAuthStore.getState().user
+      if (search) {
+        return (await getDocs(query(
+          collection(db, Collections.quizzes), where('usercreator', '==', user?.uid)
+        ))).size;
+      }
       return (await getDocs(query(collection(db, Collections.quizzes), where('usercreator', '==', user?.uid)))).size;
+    }
+    if (search) {
+      return (await getDocs(query(
+        collection(db, Collections.quizzes), where('draft', '==', draft)
+      ))).size;
     }
     return (await getDocs(query(collection(db, Collections.quizzes), where('draft', '==', draft)))).size;
   }
 
-  async listQuiz({ size, isOwn }: { size: number; isOwn?: boolean }): Promise<Quiz[] | null> {
+
+
+  async listQuiz({ size, isOwn, search = "" }: { size: number; isOwn?: boolean; search?: string; }): Promise<Quiz[] | null> {
     try {
       let querySnapshot: QuerySnapshot;
       if (isOwn) {
